@@ -26,9 +26,20 @@ def get_cursor():
         conn.close()
 
 
-def insert_dict_into_db(table_name, data_dict):
-    pass
+def insert_dict_into_db(table_name, data_dict, ignore_conflict=False):
+    value_list = [tuple(data_dict.values())]
+    headers= list(map(lambda x: x.lower(), list(data_dict.keys())))
+    conflict_line = ''
+    if ignore_conflict:
+        conflict_line = 'ON CONFLICT DO NOTHING'
 
+    try:
+        with get_cursor() as cur:
+            extras.execute_values(cur,
+                                  f"""insert into {table_name} ("{'","'.join(headers)}") values %s {conflict_line};""", value_list)
+        return cur.rowcount
+    except Exception as e:
+        pass
 
 def insert_dataframe_into_db(table_name, data_frame):
     pass

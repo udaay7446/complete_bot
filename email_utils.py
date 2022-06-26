@@ -36,7 +36,7 @@ class Mail:
                 if not file_name:
                     file_name = 'downloaded_file_' + str(uuid4())
                 result_path = Mail.write_file(file_name, file_content)
-                print(result_path)
+                # print(result_path)
                 attachments.append(result_path)
 
         return body_text, attachments
@@ -103,8 +103,10 @@ class MailBox():
         # subject = 'This is test mail'
         # from_add = ''
         data = self.imap.uid('search', None, 'UNSEEN', f'(FROM "{from_add}")', f'(SUBJECT "{subject}")')[1][0].split()
-        latest = data[-1]
-
+        if len(data) > 0:
+            latest = data[-1]
+        else:
+            return False
         mail_data = self.imap.uid('FETCH', latest, '(RFC822)')[1]
 
         if keep_unread:
