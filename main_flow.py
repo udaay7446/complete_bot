@@ -1,12 +1,14 @@
 import glob
 import os
 import time
-
+import pandas as pd
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
+
+import db_connection
 from email_utils import MailBox
 
 Download_path = os.path.join(os.getcwd(), 'download')
@@ -30,7 +32,28 @@ def delete_all_files(download_path):
 delete_all_files(download_path=Download_path)
 mailbox_obj = MailBox(email_id, password)
 latest_mail = mailbox_obj.get_latest_mail(subject="This is test mail")
-print(latest_mail)
+# print(latest_mail)
+if latest_mail:
+    files = glob.glob(Download_path + "/*")
+    if len(files) > 0:
+        for i in files:
+            if i.endswith(".xlsx"):
+                pass
+            else:
+                try:
+                    os.remove(i)
+                except Exception as e:
+                    pass
+
+    file = glob.glob(Download_path + "/*.xlsx")
+    df = pd.read_excel(file[0])
+    df.astype(str)
+    df = df.to_dict(orient='records')
+
+    for data in df:
+        db_connection.insert_dict_into_db(table_name="uday.skills", data_dict=data, ignore_conflict=True)
+
+
 options = webdriver.ChromeOptions()
 
 options.add_argument('--disable-infobars')
